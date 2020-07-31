@@ -117,12 +117,15 @@ def run_plugin(dump_obj, plugin_obj, es_url):
         plugin_config_path = interfaces.configuration.path_join(
             base_config_path, plugin_obj.name
         )
-        if dump_obj.parameter:
-            for k, v in [x.split(":") for x in dump_obj.split("-")]:
-                extended_path = interfaces.configuration.path_join(
-                    plugin_config_path, k
-                )
-                ctx.config[extended_path] = v
+        try:
+            if dump_obj.parameter:
+                for k, v in [x.split(":") for x in dump_obj.split("-")]:
+                    extended_path = interfaces.configuration.path_join(
+                        plugin_config_path, k
+                    )
+                    ctx.config[extended_path] = v
+        except:
+            pass
 
         file_name = os.path.abspath(dump_obj.upload.path)
         single_location = "file:" + pathname2url(file_name)
