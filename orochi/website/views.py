@@ -66,16 +66,22 @@ def plugin(request):
         up = get_object_or_404(
             UserPlugin, plugin=plugin, user=request.user, disabled=False
         )
+
+        parameter = request.GET.get("parameter")
+
         result = get_object_or_404(Result, dump=dump, plugin=plugin)
         if result in [0, 5]:
             raise Http404
+
+        if parameter:
+            result.parameter = parameter
+        result.result = 0
+        result.save()
 
         es_client = Elasticsearch([settings.ELASTICSEARCH_URL])
         es_client.indices.delete(
             "{}_{}".format(dump.index, plugin.name.lower()), ignore=[400, 404]
         )
-        result.result = 0
-        result.save()
 
         plugin_f_and_f(dump, plugin)
         return JsonResponse({"ok": True})
@@ -138,6 +144,7 @@ def analysis(request):
                 "result": res.get_result_display(),
                 "description": res.description,
                 "color": colors[res.dump.index],
+                "parameter": res.parameter,
                 "resubmit": True if res.result not in [0, 5] else False,
             }
             for res in results

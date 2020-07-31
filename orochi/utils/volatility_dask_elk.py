@@ -113,6 +113,17 @@ def run_plugin(dump_obj, plugin_obj, es_url):
             seen_automagics.add(amagic)
         plugin = plugin_list.get(plugin_obj.name)
         base_config_path = "/src/volatility/volatility/plugins"
+
+        plugin_config_path = interfaces.configuration.path_join(
+            base_config_path, plugin_obj.name
+        )
+        if dump_obj.parameter:
+            for k, v in [x.split(":") for x in dump_obj.split("-")]:
+                extended_path = interfaces.configuration.path_join(
+                    plugin_config_path, k
+                )
+                ctx.config[extended_path] = v
+
         file_name = os.path.abspath(dump_obj.upload.path)
         single_location = "file:" + pathname2url(file_name)
         ctx.config["automagic.LayerStacker.single_location"] = single_location

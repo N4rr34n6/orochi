@@ -165,7 +165,8 @@
                     $("#alert_ul").empty();
                     data.note.forEach(function (elem, i) {
                         var top_icon = `<span class="p-2"><svg class="bd-placeholder-img rounded mr-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img"><rect width="100%" height="100%" fill="${elem.color}"></rect></svg></span>`;
-                        var top_name = `<span class="p-2"><b>${elem.dump_name}: ${elem.plugin}</b></span>`;
+                        var top_parameter = elem.parameter ? `[parameter: ${elem.parameter}]` : '';
+                        var top_name = `<span class="p-2"><b>${elem.dump_name}: ${elem.plugin} ${top_parameter}</b></span>`;
                         var log_button = elem.description ? `<button type="button" class="btn btn-sm btn-outline-danger btn-log" data-log="${escape(elem.description)}"><i class="fas fa-indent" title="Log"></i></button>` : '';
                         if (elem.resubmit) {
                             var rerun_button = `<button type="button" class="btn btn-sm btn-outline-warning btn-resubmit" data-name="${elem.dump_name}" data-index="${elem.index}" data-plugin="${elem.plugin}"><i class="fas fa-sync" title="Rerun"></i></button>`;
@@ -197,35 +198,42 @@
             var name = $(this).data('name');
             var call = $(this).closest("li.bd-callout");
 
-            $.ajax({
-                url: "{% url 'plugin' %}",
-                data: { 'plugin': plugin, 'index': index },
-                method: 'get',
-                dataType: 'json',
-                success: function (data) {
-                    $('#example').html("<table id='example'><thead><tr><th>No Data</th></tr></thead></table>");
-                    call.removeClass('bd-callout-Success')
-                        .removeClass('bd-callout-Empty')
-                        .removeClass('bd-callout-Unsatisfied')
-                        .removeClass('bd-callout-Error').addClass('bd-callout-Running');
-                    var table = $("#example").DataTable();
-                    clean_table("Select index and plugin");
-                    $.toast({
-                        title: 'Plugin resubmit!',
-                        content: `Plugin ${plugin} resubmitted on ${index}.`,
-                        type: 'success',
-                        delay: 5000
-                    });
-                },
-                error: function () {
-                    $.toast({
-                        title: 'Plugin resubmit!',
-                        content: 'Error during submission.',
-                        type: 'error',
-                        delay: 5000
-                    });
-                },
-            })
+            bootbox.prompt({
+                title: "Rerun plugin with parameter?",
+                centerVertical: true,
+                callback: function (result) {
+
+                    $.ajax({
+                        url: "{% url 'plugin' %}",
+                        data: { 'parameter': result, 'plugin': plugin, 'index': index },
+                        method: 'get',
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#example').html("<table id='example'><thead><tr><th>No Data</th></tr></thead></table>");
+                            call.removeClass('bd-callout-Success')
+                                .removeClass('bd-callout-Empty')
+                                .removeClass('bd-callout-Unsatisfied')
+                                .removeClass('bd-callout-Error').addClass('bd-callout-Running');
+                            var table = $("#example").DataTable();
+                            clean_table("Select index and plugin");
+                            $.toast({
+                                title: 'Plugin resubmit!',
+                                content: `Plugin ${plugin} resubmitted on ${index}.`,
+                                type: 'success',
+                                delay: 5000
+                            });
+                        },
+                        error: function () {
+                            $.toast({
+                                title: 'Plugin resubmit!',
+                                content: 'Error during submission.',
+                                type: 'error',
+                                delay: 5000
+                            });
+                        },
+                    })
+                }
+            });
         });
 
         // SHOW CHILDRENS

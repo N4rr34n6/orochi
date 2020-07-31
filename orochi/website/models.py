@@ -65,6 +65,7 @@ class Result(models.Model):
     plugin = models.ForeignKey(Plugin, on_delete=models.CASCADE)
     result = models.PositiveSmallIntegerField(choices=RESULT, default=0)
     description = models.TextField(blank=True, null=True)
+    parameter = models.CharField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return "{} [{}]".format(self.dump.name, self.plugin.name)
